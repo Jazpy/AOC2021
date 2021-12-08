@@ -1,12 +1,10 @@
-import numpy as np
-
 right = []
 left  = []
 with open('inputs/15.txt', 'r') as in_f:
   for line in in_f:
     split = line.split('|')
-    left.append([''.join(sorted(x)) for x in split[0].split()])
-    right.append([''.join(sorted(x)) for x in split[1].split()])
+    left.append([set(x) for x in split[0].split()])
+    right.append([set(x) for x in split[1].split()])
 
 class Display:
   def __init__(self, left, right):
@@ -14,7 +12,7 @@ class Display:
     self.num     = self.decode(right)
 
   def intersect(self, s0, s1):
-    return len(set(s0).intersection(set(s1)))
+    return len(s0.intersection(s1))
 
   def create_decoder(self, l):
     decoder = [''] * 10
