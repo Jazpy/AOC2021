@@ -1,10 +1,9 @@
-with open('inputs/3.txt', 'r') as in_f:
+with open('inputs/d2.txt', 'r') as in_f:
   commands = in_f.readlines()
 commands = [comm.split() for comm in commands]
 
 depth = 0
 horizontal = 0
-aim = 0
 
 for comm in commands:
   c = comm[0]
@@ -12,10 +11,9 @@ for comm in commands:
 
   if c == 'forward':
     horizontal += v
-    depth += aim * v
   elif c == 'down':
-    aim += v
+    depth += v
   else:
-    aim -= v
+    depth -= v
 
 print(depth * horizontal)

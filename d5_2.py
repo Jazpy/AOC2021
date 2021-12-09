@@ -1,6 +1,7 @@
 import numpy as np
+import math
 
-with open('inputs/9.txt', 'r') as in_f:
+with open('inputs/d5.txt', 'r') as in_f:
     lines = in_f.readlines()
 
 coords = []
@@ -21,7 +22,10 @@ for (p0, p1) in coords:
         x_iter = range(min(x_0, x_1), max(x_0, x_1) + 1)
         y_iter = [y_0] * (abs(x_1 - x_0) + 1)
     else:
-        continue
+        x_sign = int(math.copysign(1, x_1 - x_0))
+        y_sign = int(math.copysign(1, y_1 - y_0))
+        x_iter = range(x_0, x_1 + x_sign, x_sign)
+        y_iter = range(y_0, y_1 + y_sign, y_sign)
 
     for x, y in zip(x_iter, y_iter):
         if diagram[y, x] == 1:

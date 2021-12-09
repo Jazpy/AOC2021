@@ -1,4 +1,4 @@
-with open('inputs/1.txt', 'r') as in_f:
+with open('inputs/d1.txt', 'r') as in_f:
   reads = in_f.readlines()
 
 reads = [int(read) for read in reads]

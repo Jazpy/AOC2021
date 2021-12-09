@@ -1,4 +1,4 @@
-with open('inputs/5.txt', 'r') as in_f:
+with open('inputs/d3.txt', 'r') as in_f:
   o2 = [x.strip() for x in in_f.readlines()]
 
 co2 = o2.copy()

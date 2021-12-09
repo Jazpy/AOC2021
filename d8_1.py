@@ -1,7 +1,7 @@
 import numpy as np
 
 right = []
-with open('inputs/15.txt', 'r') as in_f:
+with open('inputs/d8.txt', 'r') as in_f:
   for line in in_f:
     split = line.split('|')
     right.append([len(x) for x in split[1].split()])

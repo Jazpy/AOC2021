@@ -1,7 +1,7 @@
 import numpy as np
 
 boards = []
-with open('inputs/7.txt', 'r') as in_f:
+with open('inputs/d4.txt', 'r') as in_f:
     numbers = [int(x) for x in in_f.readline().split(',')]
     in_f.readline()
 

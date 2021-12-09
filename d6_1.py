@@ -1,6 +1,6 @@
 lanternfish = [0] * 9
 
-with open('inputs/11.txt', 'r') as in_f:
+with open('inputs/d6.txt', 'r') as in_f:
     start = [int(x) for x in in_f.readline().split(',')]
 
 for s in start:

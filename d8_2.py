@@ -1,6 +1,6 @@
 right = []
 left  = []
-with open('inputs/15.txt', 'r') as in_f:
+with open('inputs/d8.txt', 'r') as in_f:
   for line in in_f:
     split = line.split('|')
     left.append([set(x) for x in split[0].split()])
