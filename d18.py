@@ -3,7 +3,7 @@ import copy
 import itertools
 
 with open('inputs/d18.txt', 'r') as in_f:
-    lines = [x.strip() for x in in_f.readlines()]
+  lines = [x.strip() for x in in_f.readlines()]
 
 class Snail:
   # Constructor
