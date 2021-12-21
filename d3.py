@@ -1,6 +1,25 @@
 with open('inputs/d3.txt', 'r') as in_f:
-  o2 = [x.strip() for x in in_f.readlines()]
+  numbers = [x.strip() for x in in_f.readlines()]
 
+# Silver
+gamma = 0
+epsilon = 0
+
+for i in range(len(numbers[0])):
+  count = 0
+
+  for number in numbers:
+    if number[-(i + 1)] == '1':
+      count += 1
+
+  g, e = (1, 0) if count > (len(numbers) / 2) else (0, 1)
+  gamma += g * (2 ** i)
+  epsilon += e * (2 ** i)
+
+print(gamma * epsilon)
+
+# Gold
+o2 = numbers
 co2 = o2.copy()
 
 def get_count(l, i):
@@ -12,7 +31,6 @@ def get_count(l, i):
   return count
 
 for i in range(len(o2[0])):
-
   if len(o2) == 1 and len(co2) == 1:
     break
 

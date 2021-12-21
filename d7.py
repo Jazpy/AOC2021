@@ -6,6 +6,10 @@ with open('inputs/d7.txt', 'r') as in_f:
 def spend_fuel(n):
   return n * (n + 1) // 2
 
+# Silver
+print(sum([abs(x - int(np.median(crabs))) for x in crabs]))
+
+# Gold
 mid = round(np.mean(crabs))
 fuels = []
 for i in range(mid - 1, mid + 1):

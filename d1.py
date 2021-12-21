@@ -3,6 +3,19 @@ with open('inputs/d1.txt', 'r') as in_f:
 
 reads = [int(read) for read in reads]
 
+# Silver
+past = reads[0]
+count = 0
+
+for read in reads[1:]:
+  if read > past:
+    count += 1
+
+  past = read
+
+print(count)
+
+# Gold
 past = reads[0] + reads[1] + reads[2]
 count = 0
 

@@ -1,11 +1,22 @@
-right = []
-left  = []
+right  = []
+left   = []
+silver = []
 with open('inputs/d8.txt', 'r') as in_f:
   for line in in_f:
     split = line.split('|')
     left.append([set(x) for x in split[0].split()])
     right.append([set(x) for x in split[1].split()])
+    silver.append([len(x) for x in split[1].split()])
 
+# Silver
+count = 0
+for s in silver:
+  for e in s:
+    if e == 2 or e == 4 or e == 3 or e == 7:
+      count += 1
+print(count)
+
+# Gold
 class Display:
   def __init__(self, left, right):
     self.decoder = self.create_decoder(left)
