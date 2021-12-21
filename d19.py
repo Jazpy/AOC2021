@@ -1,5 +1,6 @@
 import itertools
 import multiprocessing
+import math
 
 with open('inputs/d19.txt', 'r') as in_f:
   lines = [x.strip() for x in in_f.readlines()]
@@ -20,6 +21,9 @@ class Scanner:
     def distance(self, o):
       return abs(self.x - o.x) + abs(self.y - o.y) + abs(self.z - o.z)
 
+    def euclidean_distance(self, o):
+      return math.sqrt((self.x-o.x)**2+(self.y-o.y)**2+(self.z-o.z)**2)
+
     def __eq__(self, o):
       return self.x == o.x and self.y == o.y and self.z == o.z
 
@@ -33,8 +37,26 @@ class Scanner:
     self.aligned = True if idx == 0 else False
     self.no_align = []
 
+  def build_rotations_worker(s):
+    return s.build_rotations()
+
+  def build_fingerprints_worker(s):
+    return s.build_fingerprints()
+
+  def build_distance_worker(s0, s1):
+    return s0.loc.distance(s1.loc)
+
+  def build_points_worker(s):
+    return s.get_absolute_points()
+
   def add_point(self, s):
     self.points.append(self.Point(None, None, None, s))
+
+  def add_rotations(self, r):
+    self.rotations = r
+
+  def add_fingerprints(self, f):
+    self.fingerprints = f
 
   def get_rotations(self, x, y, z):
     return [
@@ -47,59 +69,63 @@ class Scanner:
     ]
 
   def build_rotations(self):
-    self.rotations = [[] for _ in range(24)]
+    rotations = [[] for _ in range(24)]
     for p in self.points:
       rots = self.get_rotations(p.x, p.y, p.z)
       for i, r in enumerate(rots):
-        self.rotations[i].append(r)
+        rotations[i].append(r)
+    return rotations
+
+  def build_fingerprints(self):
+    fingerprints = set()
+    for p0, p1 in itertools.combinations(self.points, 2):
+      fingerprints.add(p0.euclidean_distance(p1))
+    return fingerprints
 
   def get_absolute_points(self):
-    ret = []
-    for p in self.points:
-      ret.append(self.Point(p.x + self.loc.x, p.y + self.loc.y,
-                               p.z + self.loc.z))
-    return ret
+    return [self.Point(p.x + self.loc.x, p.y + self.loc.y, p.z + self.loc.z)
+            for p in self.points]
 
   def single_rotation_check(self, rot_points):
+    miss_check = min(len(self.points), len(rot_points)) - 12
+
     for p_ref, p_o in itertools.product(self.points, rot_points):
       shift = [p_ref.x - p_o.x, p_ref.y - p_o.y, p_ref.z - p_o.z]
-      hits = 0
-      miss = 0
+      hits = miss = 0
       for p in rot_points:
-        shifted = Scanner.Point(p.x + shift[0], p.y + shift[1], p.z + shift[2])
+        shifted = self.Point(p.x + shift[0], p.y + shift[1], p.z + shift[2])
 
         if shifted in self.points:
           hits += 1
         else:
           miss += 1
 
-        if miss > 15:
+        if miss > miss_check:
           break
         elif hits == 12:
           return (True, shift, rot_points)
     return (False, 0, [])
 
-  def align(self, o):
-    if self.id in o.no_align or o.id in self.no_align or o.aligned:
-      return False
-
-    with multiprocessing.Pool(processes = multiprocessing.cpu_count()) as p:
-      results = p.map(self.single_rotation_check, o.rotations)
-
+  def align(self, o, pool):
     found_align = False
+    if (o.id in self.no_align or o.aligned or
+        len(self.fingerprints.intersection(o.fingerprints)) < 12):
+      return found_align
+
+    results = pool.map(self.single_rotation_check, o.rotations)
+
     for found, shift, rot in results:
       if found:
         found_align = True
-        correct_shift = shift
-        correct_rot = rot
+        o.loc.x = self.loc.x + shift[0]
+        o.loc.y = self.loc.y + shift[1]
+        o.loc.z = self.loc.z + shift[2]
+        o.points = rot
+        o.aligned = True
         break
 
-    if found_align:
-      o.loc.x = self.loc.x + correct_shift[0]
-      o.loc.y = self.loc.y + correct_shift[1]
-      o.loc.z = self.loc.z + correct_shift[2]
-      o.points = rot
-      o.aligned = True
+    if not found_align:
+      self.no_align.append(o.id)
 
     return found_align
 
@@ -113,31 +139,47 @@ for line in lines:
   else:
     scanners[-1].add_point(line)
 
-for s in scanners:
-  s.build_rotations()
+# For parallelizing various parts of the problem
+pool = multiprocessing.Pool(multiprocessing.cpu_count())
 
+# Build 24 rotations for each scanner
+rotations = pool.map(Scanner.build_rotations_worker, scanners)
+for s, r in zip(scanners, rotations):
+  s.add_rotations(r)
+
+# Build distances between all points inside a scanner for all scanners. This
+# can be used as a fingerprinting heuristic to determine if two scaners
+# will align or not.
+fingerprints = pool.map(Scanner.build_fingerprints_worker, scanners)
+for s, f in zip(scanners, fingerprints):
+  s.add_fingerprints(f)
+
+# Align all scanners
 aligned = [scanners[0]]
 unaligned = scanners[1:]
 
 while len(aligned) != len(scanners):
   new_aligned = aligned
   for s0, s1 in itertools.product(aligned, unaligned):
-    if s0.align(s1):
+    if s0.align(s1, pool):
       new_aligned.append(s1)
       unaligned.remove(s1)
   aligned = new_aligned
 
 # Puzzle outputs
 silver = set()
-for s in aligned:
-  for p in s.get_absolute_points():
+abs_points = pool.map(Scanner.build_points_worker, aligned)
+for points in abs_points:
+  for p in points:
     silver.add(p)
 
-gold = 0
-for s0, s1 in itertools.product(scanners, scanners):
-  dist = s0.loc.distance(s1.loc)
-  if dist > gold:
-    gold = dist
+distances = pool.starmap(Scanner.build_distance_worker,
+  [x for x in itertools.product(scanners, repeat=2)])
+gold = max(distances)
 
 print(len(silver))
 print(gold)
+
+# Done parallelizing
+pool.close()
+pool.join()
