@@ -1,4 +1,5 @@
 import itertools
+import multiprocessing
 
 with open('inputs/d19.txt', 'r') as in_f:
   lines = [x.strip() for x in in_f.readlines()]
@@ -18,9 +19,6 @@ class Scanner:
 
     def distance(self, o):
       return abs(self.x - o.x) + abs(self.y - o.y) + abs(self.z - o.z)
-
-    def __str__(self):
-      return f'({self.x}, {self.y}, {self.z})'
 
     def __eq__(self, o):
       return self.x == o.x and self.y == o.y and self.z == o.z
@@ -59,29 +57,41 @@ class Scanner:
     ret = []
     for p in self.points:
       ret.append(self.Point(p.x + self.loc.x, p.y + self.loc.y,
-                            p.z + self.loc.z))
+                               p.z + self.loc.z))
     return ret
+
+  def single_rotation_check(self, rot_points):
+    for p_ref, p_o in itertools.product(self.points, rot_points):
+      shift = [p_ref.x - p_o.x, p_ref.y - p_o.y, p_ref.z - p_o.z]
+      hits = 0
+      miss = 0
+      for p in rot_points:
+        shifted = Scanner.Point(p.x + shift[0], p.y + shift[1], p.z + shift[2])
+
+        if shifted in self.points:
+          hits += 1
+        else:
+          miss += 1
+
+        if miss > 15:
+          break
+        elif hits == 12:
+          return (True, shift, rot_points)
+    return (False, 0, [])
 
   def align(self, o):
     if self.id in o.no_align or o.id in self.no_align or o.aligned:
       return False
 
+    with multiprocessing.Pool(processes = multiprocessing.cpu_count()) as p:
+      results = p.map(self.single_rotation_check, o.rotations)
+
     found_align = False
-    for rot in o.rotations:
-      for p_ref, p_o in itertools.product(self.points, rot):
-        shift = [p_ref.x - p_o.x, p_ref.y - p_o.y, p_ref.z - p_o.z]
-        hits = 0
-        for p in rot:
-          shifted = self.Point(p.x + shift[0], p.y + shift[1], p.z + shift[2])
-          if shifted in self.points:
-            hits += 1
-          if hits == 12:
-            found_align = True
-            correct_shift = shift
-            break
-        if found_align:
-          break
-      if found_align:
+    for found, shift, rot in results:
+      if found:
+        found_align = True
+        correct_shift = shift
+        correct_rot = rot
         break
 
     if found_align:
@@ -114,6 +124,7 @@ while len(aligned) != len(scanners):
   for s0, s1 in itertools.product(aligned, unaligned):
     if s0.align(s1):
       new_aligned.append(s1)
+      unaligned.remove(s1)
   aligned = new_aligned
 
 # Puzzle outputs
