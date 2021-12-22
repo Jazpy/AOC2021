@@ -46,15 +46,15 @@ class Cube:
        return True
     return False
 
-  def contains(self, c1):
-    if (self.x_min >= c1.x_min and self.x_max <= c1.x_max and
-        self.y_min >= c1.y_min and self.y_max <= c1.y_max and
-        self.z_min >= c1.z_min and self.z_max <= c1.z_max):
+  def contains(self, o):
+    if (self.x_min >= o.x_min and self.x_max <= o.x_max and
+        self.y_min >= o.y_min and self.y_max <= o.y_max and
+        self.z_min >= o.z_min and self.z_max <= o.z_max):
       return self
-    elif (c1.x_min >= self.x_min and c1.x_max <= self.x_max and
-          c1.y_min >= self.y_min and c1.y_max <= self.y_max and
-          c1.z_min >= self.z_min and c1.z_max <= self.z_max):
-      return c1
+    elif (o.x_min >= self.x_min and o.x_max <= self.x_max and
+          o.y_min >= self.y_min and o.y_max <= self.y_max and
+          o.z_min >= self.z_min and o.z_max <= self.z_max):
+      return o
     return None
 
   def split(self, o):
