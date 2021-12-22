@@ -1,6 +1,3 @@
-import itertools
-import numpy as np
-
 with open('inputs/d22.txt', 'r') as in_f:
   lines = [x.strip() for x in in_f.readlines()]
 
@@ -24,12 +21,12 @@ class Cube:
       self.z_min = z_min
       self.z_max = z_max
 
-    self.e_x   = (self.x_max - self.x_min) / 2
-    self.e_y   = (self.y_max - self.y_min) / 2
-    self.e_z   = (self.z_max - self.z_min) / 2
-    self.c_x   = self.x_min + self.e_x
-    self.c_y   = self.y_min + self.e_y
-    self.c_z   = self.z_min + self.e_z
+    self.e_x = (self.x_max - self.x_min) / 2
+    self.e_y = (self.y_max - self.y_min) / 2
+    self.e_z = (self.z_max - self.z_min) / 2
+    self.c_x = self.x_min + self.e_x
+    self.c_y = self.y_min + self.e_y
+    self.c_z = self.z_min + self.e_z
 
   def is_big(self):
     return (self.x_min < -50 or self.x_max > 50 or
